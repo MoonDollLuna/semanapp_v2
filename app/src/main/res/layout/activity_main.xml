@@ -28,6 +28,7 @@
         android:layout_marginTop="60dp"
         android:text="@string/actualmente"
         android:textAlignment="center"
+        android:textColor="@color/colorPrimary"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -35,11 +36,15 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="108dp"
-        android:layout_height="134dp"
-        app:srcCompat="@drawable/owlnobg"
-        tools:layout_editor_absoluteX="189dp"
-        tools:layout_editor_absoluteY="344dp" />
+        android:id="@+id/owl"
+        android:layout_width="wrap_content"
+        android:layout_height="141dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginTop="18dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/fecha"
+        app:layout_constraintTop_toBottomOf="@+id/fecha"
+        app:srcCompat="@drawable/owlnobg" />
 
 </android.support.constraint.ConstraintLayout>
