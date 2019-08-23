@@ -10,11 +10,6 @@ import java.util.GregorianCalendar;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
 
-    //Months (for strings)
-    private String[] months = {
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    };
-
     //Handler used to run other threads
     Handler handler;
 
@@ -24,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     GregorianCalendar currentDate;
 
     //Elements on the screen
-    TextView currentDateTV;
+    TextView currentDateTV, weeksTV, totalTimeTV;
 
 
     @Override
@@ -34,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         //Identify relevant elements on the screen
         currentDateTV = findViewById(R.id.fecha);
+        weeksTV = findViewById(R.id.semanas);
+        totalTimeTV = findViewById(R.id.fechaTotal);
 
         //Get current date and update the screen
         currentDate = new GregorianCalendar();
@@ -68,6 +65,35 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 && date1.get(Calendar.DAY_OF_MONTH) == date2.get(Calendar.DAY_OF_MONTH);
     }
 
+    //Returns the number of days between two dates
+    //TODO REHACERLO YO
+    public static int daysBetween(Calendar day1, Calendar day2){
+        Calendar dayOne = (Calendar) day1.clone(),
+                dayTwo = (Calendar) day2.clone();
+
+        if (dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR)) {
+            return Math.abs(dayOne.get(Calendar.DAY_OF_YEAR) - dayTwo.get(Calendar.DAY_OF_YEAR));
+        } else {
+            if (dayTwo.get(Calendar.YEAR) > dayOne.get(Calendar.YEAR)) {
+                //swap them
+                Calendar temp = dayOne;
+                dayOne = dayTwo;
+                dayTwo = temp;
+            }
+            int extraDays = 0;
+
+            int dayOneOriginalYearDays = dayOne.get(Calendar.DAY_OF_YEAR);
+
+            while (dayOne.get(Calendar.YEAR) > dayTwo.get(Calendar.YEAR)) {
+                dayOne.add(Calendar.YEAR, -1);
+                // getActualMaximum() important for leap years
+                extraDays += dayOne.getActualMaximum(Calendar.DAY_OF_YEAR);
+            }
+
+            return extraDays - dayTwo.get(Calendar.DAY_OF_YEAR) + dayOneOriginalYearDays ;
+        }
+    }
+
     private void updateScreen(){
 
         //Day, month and year
@@ -76,9 +102,140 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         month = currentDate.get(Calendar.MONTH);
         year = currentDate.get(Calendar.YEAR);
 
+        //Months (for strings)
+        String[] months = {
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+
         //Update the currently displayed date
         String date =  day + " de " + months[month] + " de " + year;
         currentDateTV.setText(date);
 
+        //Update the number of weeks on screen
+        updateWeeks(daysBetween(anniversary, currentDate));
+        //Update the number of years, months, weeks and days on screen
+        updateDate();
+
+    }
+
+    private void updateWeeks(int totalDays){
+
+        //Get the number of weeks and the number of days
+        int weeks = totalDays / 7;
+        int days = totalDays % 7;
+
+        //String to be set
+        String setText = "";
+
+        //POSSIBLE CASES:
+        //No weeks
+        if (weeks == 0){
+            //1 day
+            if (days == 1) setText = "★ 1 día";
+                //More than 1 day
+            else setText = "★ " + days + " días";
+        }
+        //1 week
+        else if (weeks == 1){
+            //0 days
+            if (days == 0) setText = "★ 1 semana";
+                //1 day
+            else if (days == 1) setText = "★ 1 semana y 1 día";
+                //More than 1 day
+            else setText = "★ 1 semana y " + days + " días";
+        }
+        //More than 1 week
+        else{
+            //0 days
+            if (days == 0) setText = "★ " + weeks + " semanas";
+                //1 day
+            else if (days == 1) setText = "★ " + weeks + " semanas y 1 día";
+                //More than 1 day
+            else setText = "★ " + weeks + " semanas y " + days + " días";
+        }
+
+        //Set the text
+        weeksTV.setText(setText);
+    }
+
+    private void updateDate(){
+
+        //Create clones of each calendar to avoid terrible problems
+        Calendar calendarAn = (Calendar) anniversary.clone();
+        Calendar calendarNew = (Calendar) currentDate.clone();
+
+        //Necessary variables
+        int years, months, weeks, days;
+        years = months = weeks = days = 0;
+
+        //Increase month by month until both are in the same year and month
+
+        //HOTFIX
+        calendarAn.add(Calendar.MONTH,1);
+
+        while(calendarAn.compareTo(calendarNew) < 0){
+            calendarAn.add(Calendar.MONTH,1);
+            months++;
+            if(months >= 12){
+                months = 0;
+                years++;
+            }
+        }
+
+        //Once both are in the same month, get the number of days between dates
+        calendarAn = (Calendar) anniversary.clone();
+        calendarAn.set(Calendar.YEAR, calendarNew.get(Calendar.YEAR));
+        calendarAn.set(Calendar.MONTH, calendarNew.get(Calendar.MONTH));
+
+        days = daysBetween(calendarAn, calendarNew);
+        //HOTFIX
+        days--;
+        weeks = days / 7;
+        days = days % 7;
+
+        //Prepare the string
+        String text = "★ ";
+
+        //Count how many elements will be in the string
+        int elements = 0;
+        if (years != 0) elements++;
+        if (months != 0) elements++;
+        if (weeks != 0) elements++;
+        if (days != 0) elements++;
+
+        //Years
+        if(years != 0){
+            text = text.concat(years + " año");
+            if(years != 1) text = text.concat("s");
+            if(elements > 2) text = text.concat(", ");
+            else if (elements == 2) text = text.concat(" y ");
+            elements--;
+        }
+        //Months
+        if(months != 0){
+            text = text.concat(months + " mes");
+            if(months != 1) text = text.concat("es");
+            if(elements > 2) text = text.concat(", ");
+            else if (elements == 2) text = text.concat(" y ");
+            elements--;
+        }
+
+        //Weeks
+        if(weeks != 0){
+            text = text.concat(weeks + " semana");
+            if(weeks != 1) text = text.concat("s");
+            if(elements == 2) text = text.concat(" y ");
+            elements--;
+        }
+
+        //Days
+        if(days != 0){
+            text = text.concat(days + " día");
+            if(days != 1) text = text.concat("s");
+            elements--;
+        }
+
+        //Set the text
+        totalTimeTV.setText(text);
     }
 }
