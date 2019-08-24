@@ -3,6 +3,8 @@ package luna.semanapp;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -19,7 +21,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     GregorianCalendar currentDate;
 
     //Elements on the screen
-    TextView currentDateTV, weeksTV, totalTimeTV;
+    TextView currentDateTV, weeksTV, totalTimeTV, specialTV;
+    ImageView backgroundIV;
 
 
     @Override
@@ -31,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         currentDateTV = findViewById(R.id.fecha);
         weeksTV = findViewById(R.id.semanas);
         totalTimeTV = findViewById(R.id.fechaTotal);
+        specialTV = findViewById(R.id.special);
+        backgroundIV = findViewById(R.id.background);
 
         //Get current date and update the screen
         currentDate = new GregorianCalendar();
@@ -66,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     //Returns the number of days between two dates
-    //TODO REHACERLO YO
     public static int daysBetween(Calendar day1, Calendar day2){
         Calendar dayOne = (Calendar) day1.clone(),
                 dayTwo = (Calendar) day2.clone();
@@ -115,6 +119,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         updateWeeks(daysBetween(anniversary, currentDate));
         //Update the number of years, months, weeks and days on screen
         updateDate();
+
+        //Check if there is a special date
+        specialDate();
 
     }
 
@@ -237,5 +244,29 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         //Set the text
         totalTimeTV.setText(text);
+    }
+
+    private void specialDate(){
+
+        //Check by order of priority
+
+        //Anniversary
+        if(currentDate.get(Calendar.MONTH) == 4 && currentDate.get(Calendar.DAY_OF_MONTH) == 15){
+            specialTV.setText("☽¡Feliz aniversario!☽");
+        }
+        //Month
+        else if(currentDate.get(Calendar.DAY_OF_MONTH) == 15){
+            specialTV.setText("☽¡Otro mes juntas!☽");
+        }
+        //Week
+        else if(currentDate.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY){
+            specialTV.setText("☽¡Otra semana juntas!☽");
+        }
+        //Nothing
+        else{
+            specialTV.setVisibility(View.INVISIBLE);
+            backgroundIV.setVisibility(View.INVISIBLE);
+        }
+
     }
 }
